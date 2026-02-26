@@ -1,4 +1,4 @@
-package com.ecommerce.customer.infrastructure.repository;
+package com.ecommerce.customer.infrastructure.persistence;
 
 import com.ecommerce.customer.domain.model.Customer;
 import com.ecommerce.customer.domain.repository.CustomerRepository;

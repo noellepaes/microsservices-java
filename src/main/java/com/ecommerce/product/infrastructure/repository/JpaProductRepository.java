@@ -1,4 +1,4 @@
-package com.ecommerce.product.infrastructure.repository;
+package com.ecommerce.product.infrastructure.persistence;
 
 import com.ecommerce.product.domain.model.Product;
 import com.ecommerce.product.domain.model.ProductStatus;

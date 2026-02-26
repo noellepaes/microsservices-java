@@ -1,7 +1,8 @@
 package com.ecommerce.product.presentation;
 
-import com.ecommerce.product.application.ProductService;
-import com.ecommerce.product.domain.model.Product;
+import com.ecommerce.product.application.dto.ProductDTO;
+import com.ecommerce.product.application.usecase.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,35 +16,50 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductController {
     
-    private final ProductService productService;
+    private final CreateProductUseCase createProductUseCase;
+    private final GetProductUseCase getProductUseCase;
+    private final UpdateProductUseCase updateProductUseCase;
+    private final DecreaseStockUseCase decreaseStockUseCase;
     
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product created = productService.createProduct(product);
+    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequest request) {
+        ProductDTO productDTO = new ProductDTO(
+                null, request.name(), request.description(), 
+                request.price(), request.stock(), null, null, null
+        );
+        ProductDTO created = createProductUseCase.execute(productDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProduct(@PathVariable UUID id) {
-        Product product = productService.findById(id);
+    public ResponseEntity<ProductDTO> getProduct(@PathVariable UUID id) {
+        ProductDTO product = getProductUseCase.findById(id);
         return ResponseEntity.ok(product);
     }
     
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.findAll();
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
+        List<ProductDTO> products = getProductUseCase.findAll();
         return ResponseEntity.ok(products);
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable UUID id, @RequestBody Product product) {
-        Product updated = productService.updateProduct(id, product);
+    public ResponseEntity<ProductDTO> updateProduct(
+            @PathVariable UUID id,
+            @Valid @RequestBody ProductRequest request) {
+        ProductDTO productDTO = new ProductDTO(
+                null, request.name(), request.description(), 
+                request.price(), null, null, null, null
+        );
+        ProductDTO updated = updateProductUseCase.execute(id, productDTO);
         return ResponseEntity.ok(updated);
     }
     
     @PostMapping("/{id}/decrease-stock")
-    public ResponseEntity<Void> decreaseStock(@PathVariable UUID id, @RequestParam Integer quantity) {
-        productService.decreaseStock(id, quantity);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ProductDTO> decreaseStock(
+            @PathVariable UUID id,
+            @RequestParam Integer quantity) {
+        ProductDTO product = decreaseStockUseCase.execute(id, quantity);
+        return ResponseEntity.ok(product);
     }
 }

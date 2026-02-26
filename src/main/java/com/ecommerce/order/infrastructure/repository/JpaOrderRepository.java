@@ -1,4 +1,4 @@
-package com.ecommerce.order.infrastructure.repository;
+package com.ecommerce.order.infrastructure.persistence;
 
 import com.ecommerce.order.domain.model.Order;
 import com.ecommerce.order.domain.repository.OrderRepository;

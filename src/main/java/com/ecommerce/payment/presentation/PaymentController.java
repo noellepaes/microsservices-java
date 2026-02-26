@@ -1,14 +1,14 @@
 package com.ecommerce.payment.presentation;
 
-import com.ecommerce.payment.application.PaymentService;
-import com.ecommerce.payment.domain.model.Payment;
-import com.ecommerce.payment.domain.model.PaymentMethod;
+import com.ecommerce.payment.application.dto.PaymentDTO;
+import com.ecommerce.payment.application.usecase.GetPaymentUseCase;
+import com.ecommerce.payment.application.usecase.ProcessPaymentUseCase;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,38 +17,24 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentController {
     
-    private final PaymentService paymentService;
+    private final ProcessPaymentUseCase processPaymentUseCase;
+    private final GetPaymentUseCase getPaymentUseCase;
     
     @PostMapping
-    public ResponseEntity<Payment> createPayment(
-            @RequestParam UUID orderId,
-            @RequestParam BigDecimal amount,
-            @RequestParam PaymentMethod method) {
-        Payment payment = paymentService.createPayment(orderId, amount, method);
-        return ResponseEntity.status(HttpStatus.CREATED).body(payment);
+    public ResponseEntity<Void> pay(@Valid @RequestBody PaymentRequest request) {
+        processPaymentUseCase.execute(request.orderId(), request.amount(), request.method());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Payment> getPayment(@PathVariable UUID id) {
-        Payment payment = paymentService.findById(id);
+    public ResponseEntity<PaymentDTO> getPayment(@PathVariable UUID id) {
+        PaymentDTO payment = getPaymentUseCase.findById(id);
         return ResponseEntity.ok(payment);
     }
     
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<Payment>> getPaymentsByOrder(@PathVariable UUID orderId) {
-        List<Payment> payments = paymentService.findByOrderId(orderId);
+    public ResponseEntity<List<PaymentDTO>> getPaymentsByOrder(@PathVariable UUID orderId) {
+        List<PaymentDTO> payments = getPaymentUseCase.findByOrderId(orderId);
         return ResponseEntity.ok(payments);
-    }
-    
-    @PostMapping("/{id}/approve")
-    public ResponseEntity<Payment> approvePayment(@PathVariable UUID id) {
-        Payment payment = paymentService.approvePayment(id);
-        return ResponseEntity.ok(payment);
-    }
-    
-    @PostMapping("/{id}/reject")
-    public ResponseEntity<Payment> rejectPayment(@PathVariable UUID id) {
-        Payment payment = paymentService.rejectPayment(id);
-        return ResponseEntity.ok(payment);
     }
 }

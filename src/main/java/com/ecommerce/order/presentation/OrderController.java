@@ -1,13 +1,13 @@
 package com.ecommerce.order.presentation;
 
-import com.ecommerce.order.application.OrderService;
-import com.ecommerce.order.domain.model.Order;
+import com.ecommerce.order.application.dto.OrderDTO;
+import com.ecommerce.order.application.usecase.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,46 +16,53 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderController {
     
-    private final OrderService orderService;
+    private final CreateOrderUseCase createOrderUseCase;
+    private final GetOrderUseCase getOrderUseCase;
+    private final AddItemToOrderUseCase addItemToOrderUseCase;
+    private final PayOrderUseCase payOrderUseCase;
+    private final CancelOrderUseCase cancelOrderUseCase;
     
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestParam UUID customerId) {
-        Order order = orderService.createOrder(customerId);
+    public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody OrderRequest request) {
+        OrderDTO order = createOrderUseCase.execute(request.customerId());
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrder(@PathVariable UUID id) {
-        Order order = orderService.findById(id);
+    public ResponseEntity<OrderDTO> getOrder(@PathVariable UUID id) {
+        OrderDTO order = getOrderUseCase.findById(id);
         return ResponseEntity.ok(order);
     }
     
     @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<Order>> getOrdersByCustomer(@PathVariable UUID customerId) {
-        List<Order> orders = orderService.findByCustomerId(customerId);
+    public ResponseEntity<List<OrderDTO>> getOrdersByCustomer(@PathVariable UUID customerId) {
+        List<OrderDTO> orders = getOrderUseCase.findByCustomerId(customerId);
         return ResponseEntity.ok(orders);
     }
     
     @PostMapping("/{id}/items")
-    public ResponseEntity<Order> addItem(
+    public ResponseEntity<OrderDTO> addItem(
             @PathVariable UUID id,
-            @RequestParam UUID productId,
-            @RequestParam String productName,
-            @RequestParam Integer quantity,
-            @RequestParam BigDecimal unitPrice) {
-        Order order = orderService.addItem(id, productId, productName, quantity, unitPrice);
+            @Valid @RequestBody AddItemRequest request) {
+        OrderDTO order = addItemToOrderUseCase.execute(
+                id,
+                request.productId(),
+                request.productName(),
+                request.quantity(),
+                request.unitPrice()
+        );
         return ResponseEntity.ok(order);
     }
     
     @PostMapping("/{id}/pay")
-    public ResponseEntity<Order> payOrder(@PathVariable UUID id) {
-        Order order = orderService.payOrder(id);
+    public ResponseEntity<OrderDTO> payOrder(@PathVariable UUID id) {
+        OrderDTO order = payOrderUseCase.execute(id);
         return ResponseEntity.ok(order);
     }
     
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<Order> cancelOrder(@PathVariable UUID id) {
-        Order order = orderService.cancelOrder(id);
+    public ResponseEntity<OrderDTO> cancelOrder(@PathVariable UUID id) {
+        OrderDTO order = cancelOrderUseCase.execute(id);
         return ResponseEntity.ok(order);
     }
 }

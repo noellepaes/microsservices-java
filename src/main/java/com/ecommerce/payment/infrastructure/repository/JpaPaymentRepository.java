@@ -1,4 +1,4 @@
-package com.ecommerce.payment.infrastructure.repository;
+package com.ecommerce.payment.infrastructure.persistence;
 
 import com.ecommerce.payment.domain.model.Payment;
 import com.ecommerce.payment.domain.repository.PaymentRepository;

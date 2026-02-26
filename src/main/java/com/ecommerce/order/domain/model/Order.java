@@ -1,5 +1,6 @@
 package com.ecommerce.order.domain.model;
 
+import com.ecommerce.order.domain.exception.OrderException;
 import com.ecommerce.shared.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "orders", schema = "order_schema")
@@ -55,7 +57,7 @@ public class Order extends BaseEntity {
     // Nunca pode ir de CANCELLED → PAID
     public void pay() {
         if (this.status != OrderStatus.PENDING) {
-            throw new IllegalStateException(
+            throw new OrderException(
                 String.format("Pedido não pode ser pago. Status atual: %s. Apenas pedidos PENDING podem ser pagos.", this.status)
             );
         }
@@ -64,17 +66,17 @@ public class Order extends BaseEntity {
     
     public void cancel() {
         if (this.status == OrderStatus.PAID) {
-            throw new IllegalStateException("Pedido pago não pode ser cancelado");
+            throw new OrderException("Pedido pago não pode ser cancelado");
         }
         if (this.status == OrderStatus.CANCELLED) {
-            throw new IllegalStateException("Pedido já está cancelado");
+            throw new OrderException("Pedido já está cancelado");
         }
         this.status = OrderStatus.CANCELLED;
     }
     
     public void confirm() {
         if (this.status != OrderStatus.PENDING) {
-            throw new IllegalStateException("Apenas pedidos PENDING podem ser confirmados");
+            throw new OrderException("Apenas pedidos PENDING podem ser confirmados");
         }
         this.status = OrderStatus.CONFIRMED;
     }

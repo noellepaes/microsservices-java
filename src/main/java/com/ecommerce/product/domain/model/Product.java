@@ -1,5 +1,6 @@
 package com.ecommerce.product.domain.model;
 
+import com.ecommerce.product.domain.exception.ProductException;
 import com.ecommerce.shared.domain.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -36,17 +37,17 @@ public class Product extends BaseEntity {
     // Regras de negócio no domínio
     public void decreaseStock(Integer quantity) {
         if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
+            throw new ProductException("Quantidade deve ser maior que zero");
         }
         if (this.stock < quantity) {
-            throw new IllegalStateException("Estoque insuficiente");
+            throw new ProductException("Estoque insuficiente");
         }
         this.stock -= quantity;
     }
     
     public void increaseStock(Integer quantity) {
         if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
+            throw new ProductException("Quantidade deve ser maior que zero");
         }
         this.stock += quantity;
     }

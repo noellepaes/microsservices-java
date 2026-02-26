@@ -1,9 +1,5 @@
 package com.ecommerce.shared.exception;
 
-import com.ecommerce.customer.domain.exception.CustomerException;
-import com.ecommerce.order.domain.exception.OrderException;
-import com.ecommerce.payment.domain.exception.PaymentFailedException;
-import com.ecommerce.product.domain.exception.ProductException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,11 +15,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Business Rule Violation", ex.getMessage());
-    }
-    
-    @ExceptionHandler({OrderException.class, PaymentFailedException.class, ProductException.class, CustomerException.class})
-    public ResponseEntity<Map<String, Object>> handleDomainException(RuntimeException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Domain Rule Violation", ex.getMessage());
     }
     
     @ExceptionHandler(Exception.class)

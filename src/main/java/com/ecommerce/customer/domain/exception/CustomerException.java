@@ -1,6 +1,8 @@
 package com.ecommerce.customer.domain.exception;
 
-public class CustomerException extends RuntimeException {
+import com.ecommerce.shared.exception.BusinessException;
+
+public class CustomerException extends BusinessException {
     public CustomerException(String message) {
         super(message);
     }

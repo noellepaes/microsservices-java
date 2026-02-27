@@ -13,3 +13,4 @@ CREATE TABLE IF NOT EXISTS payment_schema.payments (
 CREATE INDEX idx_payments_order_id ON payment_schema.payments(order_id);
 CREATE INDEX idx_payments_status ON payment_schema.payments(status);
 CREATE INDEX idx_payments_method ON payment_schema.payments(method);
+

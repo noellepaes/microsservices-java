@@ -13,3 +13,4 @@ CREATE TABLE IF NOT EXISTS product_schema.products (
 
 CREATE INDEX idx_products_status ON product_schema.products(status);
 CREATE INDEX idx_products_name ON product_schema.products(name);
+

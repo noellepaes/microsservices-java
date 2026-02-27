@@ -24,3 +24,4 @@ CREATE INDEX idx_orders_customer_id ON order_schema.orders(customer_id);
 CREATE INDEX idx_orders_status ON order_schema.orders(status);
 CREATE INDEX idx_order_items_order_id ON order_schema.order_items(order_id);
 CREATE INDEX idx_order_items_product_id ON order_schema.order_items(product_id);
+

@@ -9,3 +9,4 @@ COMMENT ON SCHEMA product_schema IS 'Schema para o módulo Product - Bounded Con
 COMMENT ON SCHEMA customer_schema IS 'Schema para o módulo Customer - Bounded Context de clientes';
 COMMENT ON SCHEMA order_schema IS 'Schema para o módulo Order - Bounded Context de pedidos';
 COMMENT ON SCHEMA payment_schema IS 'Schema para o módulo Payment - Bounded Context de pagamentos';
+

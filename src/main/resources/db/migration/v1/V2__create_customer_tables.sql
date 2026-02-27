@@ -13,3 +13,4 @@ CREATE TABLE IF NOT EXISTS customer_schema.customers (
 CREATE INDEX idx_customers_email ON customer_schema.customers(email);
 CREATE INDEX idx_customers_cpf ON customer_schema.customers(cpf);
 CREATE INDEX idx_customers_status ON customer_schema.customers(status);
+

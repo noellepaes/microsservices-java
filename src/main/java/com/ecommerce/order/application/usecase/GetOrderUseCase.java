@@ -31,4 +31,11 @@ public class GetOrderUseCase {
                 .map(OrderDTO::from)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<OrderDTO> findAll() {
+        return repository.findAll().stream()
+                .map(OrderDTO::from)
+                .collect(Collectors.toList());
+    }
 }

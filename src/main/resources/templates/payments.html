@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Pagamentos - Ecommerce</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .form-container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .badge-pending {
+            background-color: #ffc107;
+            color: black;
+        }
+        .badge-completed {
+            background-color: #28a745;
+            color: white;
+        }
+        .badge-failed {
+            background-color: #dc3545;
+            color: white;
+        }
+        .amount {
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <header class="app-header">
+        <div class="app-title">Gerenciamento de Pagamentos</div>
+        <div class="app-subtitle">Processe e visualize pagamentos</div>
+    </header>
+
+    <div class="breadcrumbs">
+        <a href="/" aria-label="Voltar para home">Home</a>
+        <span>›</span>
+        <span>Pagamentos</span>
+    </div>
+
+    <section>
+        <h2 class="section-title">Processar Novo Pagamento</h2>
+        <div class="form-container">
+            <form id="paymentForm" onsubmit="processPayment(event)">
+                <div class="form-group">
+                    <label for="orderId">ID do Pedido:</label>
+                    <input type="text" id="orderId" name="orderId" required placeholder="UUID do pedido"/>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Valor:</label>
+                    <input type="number" id="amount" name="amount" step="0.01" min="0" required/>
+                </div>
+                <div class="form-group">
+                    <label for="method">Método de Pagamento:</label>
+                    <select id="method" name="method" required>
+                        <option value="CREDIT_CARD">Cartão de Crédito</option>
+                        <option value="DEBIT_CARD">Cartão de Débito</option>
+                        <option value="PIX">PIX</option>
+                        <option value="BANK_TRANSFER">Transferência Bancária</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Processar Pagamento</button>
+            </form>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Lista de Pagamentos</h2>
+        <div class="table-container">
+            <table id="paymentsTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Pedido ID</th>
+                    <th>Valor</th>
+                    <th>Método</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                </tr>
+                </thead>
+                <tbody id="paymentsTableBody">
+                <tr th:each="payment : ${payments}">
+                    <td th:text="${payment.id()}">-</td>
+                    <td th:text="${payment.orderId()}">-</td>
+                    <td class="amount" th:text="${'R$ ' + #numbers.formatDecimal(payment.amount(), 1, 2)}">-</td>
+                    <td th:text="${payment.method()}">-</td>
+                    <td>
+                        <span class="badge badge-pending" 
+                              th:classappend="${payment.status() == 'APPROVED'} ? 'badge-completed'"
+                              th:classappend="${payment.status() == 'FAILED'} ? 'badge-failed'"
+                              th:text="${payment.status()}">PENDING</span>
+                    </td>
+                    <td th:text="${#temporals.format(payment.createdAt(), 'dd/MM/yyyy HH:mm')}">-</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script>
+    function processPayment(event) {
+        event.preventDefault();
+        const formData = {
+            orderId: document.getElementById('orderId').value,
+            amount: parseFloat(document.getElementById('amount').value),
+            method: document.getElementById('method').value
+        };
+
+        fetch('/api/payments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Pagamento processado com sucesso!');
+                document.getElementById('paymentForm').reset();
+                loadPayments();
+            } else {
+                alert('Erro ao processar pagamento');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erro ao processar pagamento');
+        });
+    }
+
+    function loadPayments() {
+        // Recarregar a página para ver os dados do servidor
+        window.location.reload();
+    }
+
+    // Carregar pagamentos ao carregar a página
+    window.onload = function() {
+        // Os pagamentos já são carregados pelo servidor via Thymeleaf
+    };
+</script>
+</body>
+</html>
+

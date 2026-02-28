@@ -31,4 +31,11 @@ public class GetPaymentUseCase {
                 .map(PaymentDTO::from)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<PaymentDTO> findAll() {
+        return repository.findAll().stream()
+                .map(PaymentDTO::from)
+                .collect(Collectors.toList());
+    }
 }

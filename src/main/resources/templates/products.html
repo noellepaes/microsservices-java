@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Produtos - Ecommerce</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .form-container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            min-height: 80px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .price {
+            font-weight: bold;
+            color: #28a745;
+        }
+        .stock {
+            font-weight: bold;
+        }
+        .stock-low {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <header class="app-header">
+        <div class="app-title">Gerenciamento de Produtos</div>
+        <div class="app-subtitle">Cadastre e gerencie seus produtos</div>
+    </header>
+
+    <div class="breadcrumbs">
+        <a href="/" aria-label="Voltar para home">Home</a>
+        <span>›</span>
+        <span>Produtos</span>
+    </div>
+
+    <section>
+        <h2 class="section-title">Cadastrar Novo Produto</h2>
+        <div class="form-container">
+            <form id="productForm" onsubmit="createProduct(event)">
+                <div class="form-group">
+                    <label for="name">Nome:</label>
+                    <input type="text" id="name" name="name" required/>
+                </div>
+                <div class="form-group">
+                    <label for="description">Descrição:</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="price">Preço:</label>
+                    <input type="number" id="price" name="price" step="0.01" min="0" required/>
+                </div>
+                <div class="form-group">
+                    <label for="stock">Estoque:</label>
+                    <input type="number" id="stock" name="stock" min="0" required/>
+                </div>
+                <button type="submit" class="btn btn-primary">Cadastrar Produto</button>
+            </form>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Lista de Produtos</h2>
+        <div class="table-container">
+            <table id="productsTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Descrição</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                    <th>Ações</th>
+                </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                <tr th:each="product : ${products}">
+                    <td th:text="${product.id()}">-</td>
+                    <td th:text="${product.name()}">-</td>
+                    <td th:text="${product.description()}">-</td>
+                    <td class="price" th:text="${'R$ ' + #numbers.formatDecimal(product.price(), 1, 2)}">-</td>
+                    <td th:class="${product.stock() < 10} ? 'stock stock-low' : 'stock'" 
+                        th:text="${product.stock()}">-</td>
+                    <td>
+                        <button class="btn" th:onclick="'loadProducts()'">Atualizar</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script>
+    function createProduct(event) {
+        event.preventDefault();
+        const formData = {
+            name: document.getElementById('name').value,
+            description: document.getElementById('description').value,
+            price: parseFloat(document.getElementById('price').value),
+            stock: parseInt(document.getElementById('stock').value)
+        };
+
+        fetch('/api/products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Produto cadastrado com sucesso!');
+                document.getElementById('productForm').reset();
+                loadProducts();
+            } else {
+                alert('Erro ao cadastrar produto');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erro ao cadastrar produto');
+        });
+    }
+
+    function loadProducts() {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('productsTableBody');
+                tbody.innerHTML = data.map(product => `
+                    <tr>
+                        <td>${product.id}</td>
+                        <td>${product.name}</td>
+                        <td>${product.description}</td>
+                        <td class="price">R$ ${product.price.toFixed(2)}</td>
+                        <td class="stock ${product.stock < 10 ? 'stock-low' : ''}">${product.stock}</td>
+                        <td><button class="btn" onclick="loadProducts()">Atualizar</button></td>
+                    </tr>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // Carregar produtos ao carregar a página
+    window.onload = function() {
+        loadProducts();
+    };
+</script>
+</body>
+</html>
+

@@ -3,6 +3,11 @@ package com.ecommerce.payment.presentation;
 import com.ecommerce.payment.application.dto.PaymentDTO;
 import com.ecommerce.payment.application.usecase.GetPaymentUseCase;
 import com.ecommerce.payment.application.usecase.ProcessPaymentUseCase;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,25 +20,40 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
+@Tag(name = "Payments", description = "API para processamento de pagamentos")
 public class PaymentController {
     
     private final ProcessPaymentUseCase processPaymentUseCase;
     private final GetPaymentUseCase getPaymentUseCase;
     
     @PostMapping
+    @Operation(summary = "Processar pagamento", description = "Processa um pagamento para um pedido")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Pagamento processado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos ou pagamento falhou")
+    })
     public ResponseEntity<Void> pay(@Valid @RequestBody PaymentRequest request) {
         processPaymentUseCase.execute(request.orderId(), request.amount(), request.method());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentDTO> getPayment(@PathVariable UUID id) {
+    @Operation(summary = "Buscar pagamento por ID", description = "Retorna um pagamento específico pelo seu ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pagamento encontrado"),
+            @ApiResponse(responseCode = "404", description = "Pagamento não encontrado")
+    })
+    public ResponseEntity<PaymentDTO> getPayment(
+            @Parameter(description = "ID do pagamento", required = true) @PathVariable UUID id) {
         PaymentDTO payment = getPaymentUseCase.findById(id);
         return ResponseEntity.ok(payment);
     }
     
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<PaymentDTO>> getPaymentsByOrder(@PathVariable UUID orderId) {
+    @Operation(summary = "Listar pagamentos por pedido", description = "Retorna todos os pagamentos de um pedido específico")
+    @ApiResponse(responseCode = "200", description = "Lista de pagamentos retornada com sucesso")
+    public ResponseEntity<List<PaymentDTO>> getPaymentsByOrder(
+            @Parameter(description = "ID do pedido", required = true) @PathVariable UUID orderId) {
         List<PaymentDTO> payments = getPaymentUseCase.findByOrderId(orderId);
         return ResponseEntity.ok(payments);
     }

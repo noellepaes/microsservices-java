@@ -2,7 +2,7 @@ package com.ecommerce.payment.application.usecase;
 
 import com.ecommerce.payment.application.dto.PaymentDTO;
 import com.ecommerce.payment.domain.model.Payment;
-import com.ecommerce.payment.domain.repository.PaymentRepository;
+import com.ecommerce.payment.infrastructure.repository.JpaPaymentRepository;
 import com.ecommerce.shared.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GetPaymentUseCase {
     
-    private final PaymentRepository repository;
+    private final JpaPaymentRepository repository;
     
     @Transactional(readOnly = true)
     public PaymentDTO findById(UUID id) {

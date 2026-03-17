@@ -201,30 +201,36 @@ payment/
  │     │     ├── Payment.java          ← Regras: approve(), fail()
  │     │     ├── PaymentStatus.java
  │     │     └── Money.java
- │     ├── service/
- │     │     └── PaymentProcessor.java ← Interface (gateway externo)
  │     ├── repository/
- │     │     └── PaymentRepository.java ← Interface
+ │     │     └── (Etapa 1) sem interface de repositório
  │     └── exception/
  │           └── PaymentFailedException.java ← extends BusinessException
  │
  ├── application/
  │     ├── usecase/
- │     │     ├── ProcessPaymentUseCase.java ← Orquestra
+ │     │     ├── ProcessPaymentUseCase.java ← Orquestra + (Etapa 1) processa direto
  │     │     └── GetPaymentUseCase.java
  │     └── dto/
  │           └── PaymentDTO.java ← DTO interno
  │
  ├── infrastructure/
  │     ├── persistence/
- │     │     └── JpaPaymentRepository.java ← Implementa PaymentRepository
- │     └── service/
- │           └── StripePaymentProcessor.java ← Implementa PaymentProcessor
+ │     │     └── JpaPaymentRepository.java ← Repositório JPA (único)
  │
  └── presentation/
        ├── PaymentController.java
        └── PaymentRequest.java ← DTO HTTP
 ```
+
+## 7️⃣ Evolução natural (sem exagero)
+
+### Etapa 1 — simples (recomendado agora)
+- `ProcessPaymentUseCase` processa o pagamento **direto** (sem adapter)
+- Persiste com `PaymentRepository` (porta de persistência)
+
+### Etapa 2 — quando começar a crescer
+- Extrair um adapter: `PaymentProcessor` (interface) + `StripePaymentProcessor` (implementação)
+- Objetivo: permitir múltiplos provedores (Stripe/PayPal) e facilitar testes/isolamento
 
 ## 🎯 Regras de Negócio no Domínio
 

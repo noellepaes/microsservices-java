@@ -2,9 +2,10 @@ package com.ecommerce.payment.application.usecase;
 
 import com.ecommerce.payment.domain.model.Payment;
 import com.ecommerce.payment.domain.model.PaymentMethod;
-import com.ecommerce.payment.domain.repository.PaymentRepository;
-import com.ecommerce.payment.domain.service.PaymentProcessor;
+import com.ecommerce.payment.domain.model.PaymentStatus;
+import com.ecommerce.payment.infrastructure.repository.JpaPaymentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,11 +13,11 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class ProcessPaymentUseCase {
     
-    private final PaymentRepository repository;
-    private final PaymentProcessor processor;
+    private final JpaPaymentRepository repository;
     
     @Transactional
     public void execute(UUID orderId, BigDecimal amount, PaymentMethod method) {
@@ -24,9 +25,32 @@ public class ProcessPaymentUseCase {
         payment.setOrderId(orderId);
         payment.setAmount(amount);
         payment.setMethod(method);
-        
-        processor.process(payment);
-        
+
+        processDirectly(payment);
+
         repository.save(payment);
+    }
+
+    /**
+     * Etapa 1 (simples): processamento direto aqui no use case.
+     * Etapa 2 (quando crescer): extrair para um adapter (ex: PaymentProcessor + Stripe/PayPal).
+     */
+    private void processDirectly(Payment payment) {
+        log.info("Processando pagamento {} (modo simples, sem adapter)", payment.getId());
+
+        // Simulação bem simples: aprova pagamentos com valor > 0, senão falha.
+        // Se amanhã você integrar Stripe/PayPal de verdade, esse trecho vira um adapter.
+        boolean success = payment.getAmount() != null && payment.getAmount().compareTo(BigDecimal.ZERO) > 0;
+
+        if (success) {
+            payment.approve(); // regra continua no domínio
+        } else {
+            payment.fail();
+        }
+
+        // Só pra deixar explícito: após processar, o status não deve ficar PENDING
+        if (payment.getStatus() == PaymentStatus.PENDING) {
+            payment.fail();
+        }
     }
 }
